@@ -1,7 +1,7 @@
 {
   "name": "neto-themekit",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./index.js",
   "author": "markjaniczak <mark@janiczak.me>",
   "license": "MIT",
   "dependencies": {
@@ -10,10 +10,9 @@
     "clui": "^0.3.6",
     "dotenv": "^8.2.0",
     "figlet": "^1.5.0",
+    "js-yaml": "^3.14.0",
     "ssh2-sftp-client": "^5.3.1",
     "yargs": "^16.0.3"
   },
-  "bin": {
-    "ntheme": "index.js"
-  }
+  "bin": "./index.js"
 }
