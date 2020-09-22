@@ -1,8 +1,6 @@
 <p align="center">
-    <h3 align="center">Neto Theme Kit</h3>
+    <h1 align="center">Neto Theme Kit</h3>
 </p>
-
----
 
 Neto Theme Kit is a cross-platform tool for building and deploying Neto Themes. Heavily inspired by Shopify's [Theme Kit](https://github.com/Shopify/themekit).
 
