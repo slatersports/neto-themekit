@@ -1,6 +1,5 @@
 const config = require("../lib/config");
 
-module.exports = (argv) => {
-	const { username, password, theme } = argv;
-	config.writeConfig(username, password, theme);
+module.exports = ({ username, password, theme, environment }) => {
+	config.writeConfig(username, password, theme, environment);
 };

@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+const chalk = require("chalk");
+
 require("yargs")
 	.command({
 		command: "configure",
@@ -22,25 +25,47 @@ require("yargs")
 				required: true,
 				type: "string",
 			},
+			environment: {
+				alias: "e",
+				describe: "Environment",
+				type: "string",
+			},
 		},
 		handler: require("./bin/configure"),
 	})
 	.command({
-		command: "download [directory]",
+		command: "download [theme]",
 		desc: "Download theme",
-		handler: require("./bin/download"),
+		handler: require("./bin/download")
 	})
 	.command({
-		command: "deploy [directory]",
+		command: "deploy",
 		desc: "Deploy theme",
 		handler: require("./bin/deploy"),
+		builder: {
+			environment: {
+				alias: "e",
+				describe: "Environment",
+				type: "string",
+			},
+		},
 	})
 	.command({
-		command: "watch [directory]",
+		command: "watch",
 		desc: "Watch for changes",
 		handler: require("./bin/watch"),
+		builder: {
+			environment: {
+				alias: "e",
+				describe: "Environment",
+				type: "string",
+			},
+		},
+	})
+	.fail((msg, err, yargs) => {
+		console.error(chalk`{red ${err}}`);
+		process.exit(1);
 	})
 	.demandCommand()
 	.help()
-    .wrap(80)
-    .argv;
+	.wrap(80).argv;
