@@ -20,23 +20,11 @@ $ git clone https://github.com/slatersports/neto-themekit
 ```
 $ yarn install
 ```
-or if using NPM:
-```
-$ npm install
-```
 3. Create a link for the project
 ```
 $ yarn link
 ```
-NPM:
-```
-$ npm link
-```
 4. In your project directory, link the project
 ```
 $ yarn link neto-themekit
-```
-NPM:
-```
-$ npm link neto-themekit
 ```
