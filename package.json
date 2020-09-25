@@ -1,5 +1,9 @@
 {
   "name": "neto-themekit",
+  "description": "A development tool for Neto themes",
+  "repository": {
+    "url": "https://github.com/slatersports/neto-themekit"
+  },
   "version": "1.0.0",
   "main": "./index.js",
   "author": "markjaniczak <mark@janiczak.me>",

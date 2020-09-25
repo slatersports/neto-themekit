@@ -63,7 +63,9 @@ require("yargs")
 		},
 	})
 	.fail((msg, err, yargs) => {
-		if (err) throw err
+		if (err) {
+			console.error(err)
+		}
 		console.error(chalk`{red ${msg}}`);
 		process.exit(1);
 	})
