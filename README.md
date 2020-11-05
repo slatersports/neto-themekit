@@ -15,7 +15,7 @@ npm install -g neto-themekit
 ```
 OR 
 ```
-yarn install -g neto-themekit
+yarn global add neto-themekit
 ```
 
 ## Usage
