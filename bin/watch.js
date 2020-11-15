@@ -9,8 +9,7 @@ const log = console.log;
 
 module.exports = async ({ environment }) => {
 	const { username, password, theme } = config.getConfig(environment);
-	await client.connectClient(username, password);
-	const instance = client.getInstance();
+	const connect = () => client.connectClient(username, password) 
 	const watcher = chokidar.watch(files.getWorkingDirectory(), {
 		ignored: /ntheme.yaml/,
 	});
@@ -23,7 +22,9 @@ module.exports = async ({ environment }) => {
 		const relativePath = files.getRelativePath(path);
 		const folder = relativePath.split("/").slice(0, -1).join("/");
 		log(`${logDate("blue")} processing file ${chalk.green(relativePath)}`);
+		let instance;
 		try {
+			instance = await connect()
 			const folderExists = await instance.exists(folder);
 			if (!folderExists) {
 				await instance.mkdir(folder, true);
@@ -32,39 +33,53 @@ module.exports = async ({ environment }) => {
 			log(`${logDate("blue")} uploaded file ${chalk.green(relativePath)}`);
 		} catch (e) {
 			log(`${logDate("red")} could not process file ${chalk.red(relativePath)}`);
+		} finally {
+			await instance.end()
 		}
 	};
 
 	const onFileDelete = async (path) => {
 		const relativePath = files.getRelativePath(path);
 		log(`${logDate()} processing file ${chalk.green(relativePath)}`);
+		let instance;
 		try {
+			instance = await connect()
 			await instance.delete(files.getRemotePath(theme, relativePath));
 			log(`${logDate()} deleted file ${chalk.green(relativePath)}`);
 		} catch (e) {
 			log(`${logDate()} could not delete file ${chalk.red(relativePath)}`);
+		} finally {
+			await instance.end()
 		}
 	};
 
 	const onDirAdd = async (path) => {
 		const relativePath = files.getRelativePath(path);
 		log(`${logDate()} processing dir ${chalk.green(relativePath)}`);
+		let instance;
 		try {
+			instance = await connect()
 			await instance.mkdir(files.getRemotePath(theme, relativePath), true);
 			log(`${logDate()} created directory ${chalk.green(relativePath)}`);
 		} catch (e) {
 			log(`${logDate()} could not create directory ${chalk.red(relativePath)}`);
+		} finally {
+			await instance.end()
 		}
 	};
 
 	const onDirDelete = async (path) => {
 		const relativePath = files.getRelativePath(path);
 		log(`${logDate()} processing dir ${chalk.green(relativePath)}`);
+		let instance
 		try {
+			instance = await connect()
 			await instance.delete(files.getRemotePath(theme, relativePath));
 			log(`${logDate()} deleted directory ${chalk.green(relativePath)}`);
 		} catch (e) {
 			log(`${logDate()} could not delete directory ${chalk.red(relativePath)}`);
+		} finally {
+			await instance.end()
 		}
 	};
 
@@ -86,9 +101,11 @@ module.exports = async ({ environment }) => {
 		process.on(sig, async () => {
 			log(`${logDate()} stopping process`);
 			try {
-				await Promise.all([instance.end(), watcher.removeAllListeners()]);
+				await watcher.removeAllListeners();
 			} catch (e) {}
 			process.exit();
 		});
 	});
+
+	console.log('sup')
 };
