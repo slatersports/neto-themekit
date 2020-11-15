@@ -1,6 +1,8 @@
 const chalk = require("chalk");
 const glob = require("glob");
 const Bottleneck = require("bottleneck/es5");
+const path = require("path");
+const fs = require('fs')
 const client = require("../lib/client");
 const config = require("../lib/config");
 const files = require("../lib/files");
@@ -15,11 +17,11 @@ module.exports = async ({ environment = "production" }) => {
 
 	const limiter = new Bottleneck({
 		maxConcurrent: 5,
-		trackDoneStatus: true
+		trackDoneStatus: true,
 	});
 
 	const srcDirectory = files.getWorkingDirectory();
-	const destDirectory = files.getRemotePath(theme);
+	const remoteDirectory = files.getRemotePath(theme)
 
 	const globFiles = () =>
 		new Promise((resolve, reject) => {
@@ -29,7 +31,7 @@ module.exports = async ({ environment = "production" }) => {
 					ignore: ["ntheme.yaml"],
 					root: srcDirectory,
 					nodir: true,
-					absolute: true,
+					absolute: true
 				},
 				(err, files) => {
 					if (err) {
@@ -40,39 +42,49 @@ module.exports = async ({ environment = "production" }) => {
 			);
 		});
 
-		const logDate = () => {
-			return chalk.blue(date.formatDateTime(new Date()));
-		};
+	const logDate = () => {
+		return chalk.blue(date.formatDateTime(new Date()));
+	};
 
 	try {
-		const initClient = await connect()
-		const destExists = await initClient.exists(destDirectory);
-		if (!destExists) {
-			await initClient.mkdir(destDirectory, true);
+		const dirClient = await connect()
+		const themeDirExists = await dirClient.exists(remoteDirectory)
+		if (!themeDirExists) {
+			dirClient.mkdir(remoteDirectory, true)
 		}
-		initClient.end()
-
+		dirClient.end()
 		const globbedFiles = await globFiles();
 		limiter.on("done", (info) => {
-			const { DONE } = limiter.counts()
-
-			const relativePath = files.getRelativePath(info.args[0])
-			
-
-			log(`${logDate()} ${chalk.yellow(`${DONE}/${globbedFiles.length}`)} uploaded file ${chalk.green(relativePath)}`) 
-		})
+			const { DONE } = limiter.counts();
+			const relativePath = files.getRelativePath(info.args[0]);
+			log(
+				`${logDate()} ${chalk.yellow(`${DONE}/${globbedFiles.length}`)} uploaded file ${chalk.green(
+					relativePath
+				)}`
+			);
+		});
 		await Promise.all(
-			globbedFiles.map(async (file) => {
-				const remotePath = files.getRemotePath(theme, files.getRelativePath(file));
+			globbedFiles.map(async (localFilePath) => {
+				const dir = path.dirname(localFilePath);
+				const remoteDirPath = files.getRemotePath(theme, files.getRelativePath(dir));
+				const remoteFilePath = files.getRemotePath(theme, files.getRelativePath(localFilePath));
 
-				return limiter.schedule(async (local, remote) => {
-					const putClient = await connect()
-					await putClient.fastPut(local, remote)
-					await putClient.end()
-				}, file, remotePath);
+				return limiter.schedule(
+					async (localFilePath, remoteDirPath, remoteFilePath) => {
+						const putClient = await connect();
+						const dirExists = await putClient.exists(remoteDirPath)
+						if (!dirExists) {
+							await putClient.mkdir(remoteDirPath, true);
+						}
+						await putClient.fastPut(localFilePath, remoteFilePath);
+						await putClient.end();
+					},
+					localFilePath,
+					remoteDirPath,
+					remoteFilePath
+				);
 			})
 		);
-
 		log(chalk.green(`deployed`));
 	} catch (e) {
 		throw Error(`failed to deploy: ${e}`);
