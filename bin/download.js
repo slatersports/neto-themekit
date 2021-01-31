@@ -8,8 +8,7 @@ const log = console.log;
 module.exports = async ({ theme }) => {
 	const environmentConfig = config.getConfig();
 	const { username, password } = environmentConfig;
-	await client.connectClient(username, password);
-	const instance = client.getInstance();
+	const instance = await client.connectClient(username, password);
 	const onDownload = ({ source }) => {
 		const relativePath = source.replace(files.getRemotePath(theme), "");
 		log(`${chalk.blue(formatTime(new Date()))} downloaded file ${chalk.yellow(relativePath)}`);
